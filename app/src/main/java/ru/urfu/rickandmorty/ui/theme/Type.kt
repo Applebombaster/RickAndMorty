@@ -1,4 +1,4 @@
-package ru.urfu.myapplication.ui.theme
+package ru.urfu.rickandmorty.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
