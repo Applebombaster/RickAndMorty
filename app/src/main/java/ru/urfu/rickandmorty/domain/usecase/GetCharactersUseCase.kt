@@ -6,6 +6,10 @@ import ru.urfu.rickandmorty.domain.repository.CharacterRepository
 class GetCharactersUseCase(
     private val repository: CharacterRepository
 ) {
-    suspend operator fun invoke(page: Int = 1, name: String? = null): CharacterPage =
-        repository.getCharacters(page, name)
+    suspend operator fun invoke(
+        page: Int = 1,
+        name: String? = null,
+        status: String? = null,
+        species: String? = null
+    ): CharacterPage = repository.getCharacters(page, name, status, species)
 }

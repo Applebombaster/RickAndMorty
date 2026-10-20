@@ -10,10 +10,14 @@ class CharacterRepositoryImpl(
     private val api: ApiService
 ) : CharacterRepository {
 
-    override suspend fun getCharacters(page: Int, name: String?): CharacterPage {
+    override suspend fun getCharacters(
+        page: Int, name: String?, status: String?, species: String?
+    ): CharacterPage {
         val response = api.getCharacters(
             page = page,
-            name = name?.takeIf { it.isNotBlank() }
+            name = name?.takeIf { it.isNotBlank() },
+            status = status?.takeIf { it.isNotBlank() },
+            species = species?.takeIf { it.isNotBlank() }
         )
         return CharacterPage(
             characters = response.results.map { it.toDomain() },

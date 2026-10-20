@@ -1,12 +1,15 @@
 package ru.urfu.rickandmorty.data
 
 import android.content.Context
+import androidx.room.Room
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import ru.urfu.rickandmorty.BuildConfig  // <--- Импорт BuildConfig
+import ru.urfu.rickandmorty.BuildConfig
+import ru.urfu.rickandmorty.data.local.AppDatabase
+import ru.urfu.rickandmorty.data.local.UserPreferencesRepository
 import ru.urfu.rickandmorty.data.remote.ApiService
 import ru.urfu.rickandmorty.data.repository.CharacterRepositoryImpl
 import ru.urfu.rickandmorty.domain.repository.CharacterRepository
@@ -15,16 +18,28 @@ import ru.urfu.rickandmorty.domain.usecase.GetCharactersUseCase
 import java.util.concurrent.TimeUnit
 
 object NetworkModule {
-
     private const val BASE_URL = "https://rickandmortyapi.com/"
-
-    // Контекст для Chucker
     private var appContext: Context? = null
 
     fun init(context: Context) {
         appContext = context.applicationContext
     }
 
+    // --- НАСТРОЙКИ (DataStore) ---
+    val prefsRepository: UserPreferencesRepository by lazy {
+        UserPreferencesRepository(appContext!!)
+    }
+
+    // --- БАЗА ДАННЫХ (Room) ---
+    private val database: AppDatabase by lazy {
+        Room.databaseBuilder(appContext!!, AppDatabase::class.java, "rick_and_morty_db")
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    val favoriteDao by lazy { database.favoriteDao() }
+
+    // --- СЕТЬ ---
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BASIC
     }
@@ -35,11 +50,9 @@ object NetworkModule {
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
 
-        // Подключаем Chucker только в debug и только если контекст передан
         if (BuildConfig.DEBUG && appContext != null) {
             builder.addInterceptor(ChuckerInterceptor(appContext!!))
         }
-
         builder.build()
     }
 

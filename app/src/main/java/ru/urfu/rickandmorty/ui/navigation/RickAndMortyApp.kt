@@ -43,9 +43,14 @@ fun RickAndMortyApp() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.CHARACTERS) {
-                CharacterListScreen(onCharacterClick = { id ->
-                    navController.navigate(Routes.characterDetail(id))
-                })
+                CharacterListScreen(
+                    onCharacterClick = { id ->
+                        navController.navigate(Routes.characterDetail(id))
+                    },
+                    onSettingsClick = {
+                        navController.navigate(Routes.SETTINGS) // Переход на экран настроек
+                    }
+                )
             }
 
             composable(Routes.FAVORITES) {
@@ -53,7 +58,12 @@ fun RickAndMortyApp() {
             }
 
             composable(Routes.SETTINGS) {
-                SettingsScreen()
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onSettingsSaved = {
+                        navController.popBackStack() // Возвращаемся на список
+                    }
+                )
             }
 
             composable(
