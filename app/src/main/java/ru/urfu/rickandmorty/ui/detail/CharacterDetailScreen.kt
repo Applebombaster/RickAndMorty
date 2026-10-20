@@ -1,18 +1,25 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package ru.urfu.rickandmorty.ui.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,57 +40,73 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import ru.urfu.rickandmorty.data.model.Character
+import ru.urfu.rickandmorty.domain.model.Character
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterDetailScreen(
     onBack: () -> Unit,
     viewModel: CharacterDetailViewModel = viewModel()
 ) {
-    val character by viewModel.character.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(character?.name ?: "Детали") },
+                title = {
+                    val title = (uiState as? CharacterDetailUiState.Success)?.character?.name
+                        ?: "Детали"
+                    Text(title)
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 }
             )
         }
     ) { innerPadding ->
-        val current = character
-        if (current == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Персонаж не найден")
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when (val state = uiState) {
+                is CharacterDetailUiState.Loading -> {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }
+
+                is CharacterDetailUiState.Error -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Ошибка: ${state.message}",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(Modifier.size(16.dp))
+                        Button(onClick = { viewModel.load() }) {
+                            Text("Повторить")
+                        }
+                    }
+                }
+
+                is CharacterDetailUiState.Success -> {
+                    CharacterDetailContent(state.character)
+                }
             }
-        } else {
-            CharacterDetailContent(
-                character = current,
-                modifier = Modifier.padding(innerPadding)
-            )
         }
     }
 }
 
 @Composable
-private fun CharacterDetailContent(
-    character: Character,
-    modifier: Modifier = Modifier
-) {
+private fun CharacterDetailContent(character: Character) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
@@ -92,11 +115,6 @@ private fun CharacterDetailContent(
     }
 }
 
-/**
- * Сложная разметка через ConstraintLayout: большая картинка, поверх неё
- * снизу — градиент, поверх градиента — имя персонажа.
- * Три слоя привязаны друг к другу через constrainAs.
- */
 @Composable
 private fun HeroSection(character: Character) {
     ConstraintLayout(
@@ -106,7 +124,6 @@ private fun HeroSection(character: Character) {
     ) {
         val (imageRef, gradientRef, nameRef) = createRefs()
 
-        // Слой 1: картинка на весь HeroSection
         AsyncImage(
             model = character.imageUrl,
             contentDescription = character.name,
@@ -122,7 +139,6 @@ private fun HeroSection(character: Character) {
                 }
         )
 
-        // Слой 2: градиент снизу — чтобы имя читалось на любом фоне
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,7 +155,6 @@ private fun HeroSection(character: Character) {
                 }
         )
 
-        // Слой 3: имя поверх градиента
         Text(
             text = character.name,
             style = MaterialTheme.typography.headlineMedium,
@@ -180,9 +195,6 @@ private fun InfoRow(label: String, value: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(140.dp)
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge
-        )
+        Text(text = value, style = MaterialTheme.typography.bodyLarge)
     }
 }
