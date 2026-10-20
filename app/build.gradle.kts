@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "ru.urfu.myapplication"
+    namespace = "ru.urfu.rickandmorty"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "ru.urfu.myapplication"
+        applicationId = "ru.urfu.rickandmorty"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -32,11 +32,18 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.logging)
+    debugImplementation(libs.chucker)
+    releaseImplementation(libs.chucker.no.op)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
@@ -44,6 +51,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.coil.compose)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
