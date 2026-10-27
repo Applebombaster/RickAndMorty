@@ -1,6 +1,7 @@
 package ru.urfu.rickandmorty.ui.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -34,6 +35,9 @@ fun BottomNavigationBar(navController: NavHostController) {
         },
         BottomNavItem(Routes.SETTINGS, "Настройки") {
             Icon(Icons.Filled.Settings, contentDescription = null)
+        },
+        BottomNavItem(Routes.PROFILE, "Профиль") {
+            Icon(Icons.Filled.AccountCircle, contentDescription = null)
         }
     )
 

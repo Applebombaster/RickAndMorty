@@ -14,12 +14,15 @@ import androidx.navigation.navArgument
 import ru.urfu.rickandmorty.ui.detail.CharacterDetailScreen
 import ru.urfu.rickandmorty.ui.favorites.FavoritesScreen
 import ru.urfu.rickandmorty.ui.list.CharacterListScreen
+import ru.urfu.rickandmorty.ui.profile.EditProfileScreen
+import ru.urfu.rickandmorty.ui.profile.ProfileScreen
 import ru.urfu.rickandmorty.ui.settings.SettingsScreen
 
 private val TOP_LEVEL_ROUTES = setOf(
     Routes.CHARACTERS,
     Routes.FAVORITES,
-    Routes.SETTINGS
+    Routes.SETTINGS,
+    Routes.PROFILE
 )
 
 @Composable
@@ -48,7 +51,7 @@ fun RickAndMortyApp() {
                         navController.navigate(Routes.characterDetail(id))
                     },
                     onSettingsClick = {
-                        navController.navigate(Routes.SETTINGS) // Переход на экран настроек
+                        navController.navigate(Routes.SETTINGS)
                     }
                 )
             }
@@ -61,8 +64,21 @@ fun RickAndMortyApp() {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onSettingsSaved = {
-                        navController.popBackStack() // Возвращаемся на список
+                        navController.popBackStack()
                     }
+                )
+            }
+
+            composable(Routes.PROFILE) {
+                ProfileScreen(
+                    onEditClick = { navController.navigate(Routes.EDIT_PROFILE) }
+                )
+            }
+
+            composable(Routes.EDIT_PROFILE) {
+                EditProfileScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() }
                 )
             }
 
