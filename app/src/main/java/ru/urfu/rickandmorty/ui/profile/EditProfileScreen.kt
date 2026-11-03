@@ -1,11 +1,9 @@
 package ru.urfu.rickandmorty.ui.profile
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -20,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,7 +29,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,21 +57,19 @@ fun EditProfileScreen(
     onSaved: () -> Unit,
     viewModel: EditProfileViewModel = viewModel()
 ) {
-    val profile by viewModel.profile.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    
-    // Состояние для диалога выбора
+
     var showImageSourceDialog by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Лаунчер для Галереи
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) viewModel.onAvatarChanged(uri.toString())
     }
 
-    // Лаунчер для Камеры
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success: Boolean ->
@@ -79,18 +78,12 @@ fun EditProfileScreen(
         }
     }
 
-    // Лаунчер для разрешений (Галерея)
     val galleryPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        if (isGranted) {
-            galleryLauncher.launch("image/*")
-        } else {
-            Toast.makeText(context, "Нет доступа к галерее", Toast.LENGTH_SHORT).show()
-        }
+        if (isGranted) galleryLauncher.launch("image/*")
     }
 
-    // Лаунчер для разрешений (Камера)
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -100,54 +93,62 @@ fun EditProfileScreen(
             val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", newFile)
             tempCameraUri = uri
             cameraLauncher.launch(uri)
-        } else {
-            Toast.makeText(context, "Нет доступа к камере", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Функция проверки разрешений для Галереи
-    fun openGallery() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            galleryLauncher.launch("image/*")
-        } else {
-            galleryPermissionLauncher.launch(permission)
-        }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        viewModel.saveProfile(context, onSaved)
     }
 
-    // Функция проверки разрешений для Камеры
-    fun openCamera() {
-        val permission = Manifest.permission.CAMERA
-        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            val file = File(context.cacheDir, "images").apply { mkdirs() }
-            val newFile = File(file, "avatar_${System.currentTimeMillis()}.jpg")
-            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", newFile)
-            tempCameraUri = uri
-            cameraLauncher.launch(uri)
-        } else {
-            cameraPermissionLauncher.launch(permission)
-        }
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState(is24Hour = true)
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Выберите время") },
+            text = { TimePicker(state = timePickerState) },
+            confirmButton = {
+                TextButton(onClick = {
+                    val hour = timePickerState.hour.toString().padStart(2, '0')
+                    val minute = timePickerState.minute.toString().padStart(2, '0')
+                    viewModel.onTimeChanged("$hour:$minute")
+                    showTimePicker = false
+                }) { Text("ОК") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Отмена") }
+            }
+        )
     }
 
-    // Диалог выбора
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
             title = { Text("Откуда взять фото?") },
             confirmButton = {
-                TextButton(onClick = { 
+                TextButton(onClick = {
                     showImageSourceDialog = false
-                    openCamera() 
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        val file = File(context.cacheDir, "images").apply { mkdirs() }
+                        val newFile = File(file, "avatar_${System.currentTimeMillis()}.jpg")
+                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", newFile)
+                        tempCameraUri = uri
+                        cameraLauncher.launch(uri)
+                    } else {
+                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
                 }) { Text("Камера") }
             },
             dismissButton = {
-                TextButton(onClick = { 
+                TextButton(onClick = {
                     showImageSourceDialog = false
-                    openGallery() 
+                    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+                    if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+                        galleryLauncher.launch("image/*")
+                    } else {
+                        galleryPermissionLauncher.launch(permission)
+                    }
                 }) { Text("Галерея") }
             }
         )
@@ -172,23 +173,16 @@ fun EditProfileScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Аватарка
-            if (profile.avatarUri.isNotEmpty()) {
+            if (uiState.avatarUri.isNotEmpty()) {
                 AsyncImage(
-                    model = profile.avatarUri,
+                    model = uiState.avatarUri,
                     contentDescription = "Аватар",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .clickable { showImageSourceDialog = true }
+                    modifier = Modifier.size(120.dp).clip(CircleShape).clickable { showImageSourceDialog = true }
                 )
             } else {
                 Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .clickable { showImageSourceDialog = true },
+                    modifier = Modifier.size(120.dp).clip(CircleShape).clickable { showImageSourceDialog = true },
                     contentAlignment = Alignment.Center
                 ) {
                     Text("Нажмите\nдля фото", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -198,7 +192,7 @@ fun EditProfileScreen(
             Spacer(Modifier.height(24.dp))
 
             OutlinedTextField(
-                value = profile.fullName,
+                value = uiState.fullName,
                 onValueChange = viewModel::onNameChanged,
                 label = { Text("ФИО") },
                 modifier = Modifier.fillMaxWidth()
@@ -206,7 +200,7 @@ fun EditProfileScreen(
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = profile.jobTitle,
+                value = uiState.jobTitle,
                 onValueChange = viewModel::onJobChanged,
                 label = { Text("Должность") },
                 modifier = Modifier.fillMaxWidth()
@@ -214,16 +208,46 @@ fun EditProfileScreen(
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = profile.resumeUrl,
+                value = uiState.resumeUrl,
                 onValueChange = viewModel::onResumeChanged,
                 label = { Text("Ссылка на резюме (URL)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.favoriteTime,
+                onValueChange = viewModel::onTimeChanged,
+                label = { Text("Время любимой пары (HH:mm)") },
+                isError = uiState.isTimeError,
+                supportingText = {
+                    if (uiState.isTimeError) {
+                        Text("Неверный формат. Используйте HH:mm")
+                    }
+                },
+                trailingIcon = {
+                    IconButton(onClick = { showTimePicker = true }) {
+                        Icon(Icons.Filled.DateRange, contentDescription = "Выбрать время")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(32.dp))
 
             Button(
-                onClick = { viewModel.saveProfile(onSaved) },
+                onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                            viewModel.saveProfile(context, onSaved)
+                        } else {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    } else {
+                        viewModel.saveProfile(context, onSaved)
+                    }
+                },
+                enabled = uiState.isSaveEnabled,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Готово")
