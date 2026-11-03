@@ -1,4 +1,4 @@
-package ru.urfu.myapplication
+package ru.urfu.rickandmorty
 
 import org.junit.Test
 
