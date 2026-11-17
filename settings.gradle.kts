@@ -22,6 +22,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "My Application"
+rootProject.name = "RickAndMorty"
 include(":app")
- 
+include(":core")
+include(":feature:profile")
