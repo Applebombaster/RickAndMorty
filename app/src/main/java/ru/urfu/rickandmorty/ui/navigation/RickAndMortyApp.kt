@@ -14,8 +14,8 @@ import androidx.navigation.navArgument
 import ru.urfu.rickandmorty.ui.detail.CharacterDetailScreen
 import ru.urfu.rickandmorty.ui.favorites.FavoritesScreen
 import ru.urfu.rickandmorty.ui.list.CharacterListScreen
-import ru.urfu.rickandmorty.ui.profile.EditProfileScreen
-import ru.urfu.rickandmorty.ui.profile.ProfileScreen
+import ru.urfu.rickandmorty.feature.profile.ui.ProfileScreen
+import ru.urfu.rickandmorty.feature.profile.ui.EditProfileScreen
 import ru.urfu.rickandmorty.ui.settings.SettingsScreen
 
 private val TOP_LEVEL_ROUTES = setOf(

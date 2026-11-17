@@ -19,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RickAndMorty">
         <receiver
-            android:name=".receiver.ReminderReceiver"
+            android:name=".feature.profile.receiver.ReminderReceiver"
             android:enabled="true"
             android:exported="false" />
         <activity

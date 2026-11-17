@@ -7,11 +7,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ru.urfu.rickandmorty.data.NetworkModule
-import ru.urfu.rickandmorty.data.local.FilterSettings
+import ru.urfu.rickandmorty.core.local.FilterSettings
 import ru.urfu.rickandmorty.data.local.SettingsStateHolder
+import ru.urfu.rickandmorty.core.CoreModule
 
 class SettingsViewModel : ViewModel() {
-    private val prefsRepo = NetworkModule.prefsRepository
+    private val prefsRepo = CoreModule.prefsRepository
 
     private val _settings = MutableStateFlow(FilterSettings())
     val settings: StateFlow<FilterSettings> = _settings.asStateFlow()

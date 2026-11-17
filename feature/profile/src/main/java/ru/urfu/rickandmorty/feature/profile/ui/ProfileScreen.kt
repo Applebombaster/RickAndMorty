@@ -1,4 +1,4 @@
-package ru.urfu.rickandmorty.ui.profile
+package ru.urfu.rickandmorty.feature.profile.ui
 
 import android.app.DownloadManager
 import android.content.Context

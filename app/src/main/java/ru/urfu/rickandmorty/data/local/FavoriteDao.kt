@@ -19,4 +19,7 @@ interface FavoriteDao {
 
     @Query("DELETE FROM favorite_characters WHERE id = :id")
     suspend fun deleteFavorite(id: Int)
+
+    @Query("SELECT EXISTS(SELECT 1 FROM favorite_characters WHERE id = :id)")
+    suspend fun isFavoriteSync(id: Int): Boolean
 }

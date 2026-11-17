@@ -1,4 +1,4 @@
-package ru.urfu.rickandmorty.ui.profile
+package ru.urfu.rickandmorty.feature.profile.ui
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import ru.urfu.rickandmorty.data.NetworkModule
-import ru.urfu.rickandmorty.data.local.UserProfile
-import ru.urfu.rickandmorty.receiver.ReminderReceiver
+import ru.urfu.rickandmorty.core.CoreModule
+import ru.urfu.rickandmorty.core.local.UserProfile
+import ru.urfu.rickandmorty.feature.profile.receiver.ReminderReceiver
 import java.util.Calendar
 
 data class EditProfileUiState(
@@ -28,7 +28,7 @@ data class EditProfileUiState(
 )
 
 class EditProfileViewModel : ViewModel() {
-    private val prefsRepo = NetworkModule.prefsRepository
+    private val prefsRepo = CoreModule.prefsRepository
 
     private val _uiState = MutableStateFlow(EditProfileUiState())
     val uiState: StateFlow<EditProfileUiState> = _uiState.asStateFlow()

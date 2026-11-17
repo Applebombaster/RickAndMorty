@@ -1,15 +1,15 @@
-package ru.urfu.rickandmorty.ui.profile
+package ru.urfu.rickandmorty.feature.profile.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import ru.urfu.rickandmorty.data.NetworkModule
-import ru.urfu.rickandmorty.data.local.UserProfile
+import ru.urfu.rickandmorty.core.CoreModule
+import ru.urfu.rickandmorty.core.local.UserProfile
 
 class ProfileViewModel : ViewModel() {
-    private val prefsRepo = NetworkModule.prefsRepository
+    private val prefsRepo = CoreModule.prefsRepository
 
     val profile: StateFlow<UserProfile> = prefsRepo.userProfileFlow
         .stateIn(

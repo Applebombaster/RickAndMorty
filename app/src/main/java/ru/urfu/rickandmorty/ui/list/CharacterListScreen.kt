@@ -82,7 +82,7 @@ fun CharacterListScreen(
                                     character = character,
                                     isFavorite = character.id in state.favorites,
                                     onClick = { onCharacterClick(character.id) },
-                                    onFavoriteClick = { viewModel.toggleFavorite(character) }
+                                    onFavoriteClick = { viewModel.toggleFavorite(character.id) }
                                 )
                             }
                             if (state.isLoadingNextPage) {
@@ -102,13 +102,21 @@ fun CharacterListScreen(
 
 @Composable
 private fun CharacterCard(
-    character: Character,
+    character: CharacterUi,
     isFavorite: Boolean,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable(onClick = onClick)) {
-        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             AsyncImage(
                 model = character.imageUrl,
                 contentDescription = character.name,
@@ -117,8 +125,21 @@ private fun CharacterCard(
             )
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = character.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text(text = "${character.status} • ${character.species}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = character.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = character.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = character.location,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             IconButton(onClick = onFavoriteClick) {
                 Icon(

@@ -1,5 +1,9 @@
 package ru.urfu.rickandmorty.data.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.urfu.rickandmorty.data.local.FavoriteDao
+import ru.urfu.rickandmorty.data.local.toEntity
 import ru.urfu.rickandmorty.data.mapper.toDomain
 import ru.urfu.rickandmorty.data.remote.ApiService
 import ru.urfu.rickandmorty.domain.model.Character
@@ -7,7 +11,8 @@ import ru.urfu.rickandmorty.domain.model.CharacterPage
 import ru.urfu.rickandmorty.domain.repository.CharacterRepository
 
 class CharacterRepositoryImpl(
-    private val api: ApiService
+    private val api: ApiService,
+    private val dao: FavoriteDao
 ) : CharacterRepository {
 
     override suspend fun getCharacters(
@@ -29,4 +34,17 @@ class CharacterRepositoryImpl(
 
     override suspend fun getCharacterById(id: Int): Character =
         api.getCharacterById(id).toDomain()
+
+    override fun getFavoriteIds(): Flow<Set<Int>> =
+        dao.getAllFavorites().map { entities ->
+            entities.map { it.id }.toSet()
+        }
+
+    override suspend fun toggleFavorite(character: Character) {
+        if (dao.isFavoriteSync(character.id)) {
+            dao.deleteFavorite(character.id)
+        } else {
+            dao.insertFavorite(character.toEntity())
+        }
+    }
 }

@@ -39,7 +39,8 @@ android {
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
-
+    implementation(project(":core"))
+    implementation(project(":feature:profile"))
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)

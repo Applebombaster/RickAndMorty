@@ -1,4 +1,4 @@
-package ru.urfu.rickandmorty.receiver
+package ru.urfu.rickandmorty.feature.profile.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context

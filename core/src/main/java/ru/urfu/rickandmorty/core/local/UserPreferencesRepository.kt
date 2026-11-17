@@ -1,4 +1,4 @@
-package ru.urfu.rickandmorty.data.local
+package ru.urfu.rickandmorty.core.local
 
 import android.content.Context
 import androidx.datastore.core.DataStore
